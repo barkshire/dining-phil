@@ -1,0 +1,39 @@
+# KlingonPoliteChange.py
+#
+# This is a Klingon Polite Change System.
+# Polite change is calculated based on the amount entered by the user.
+# Myung-chul Jeon
+# June 2017
+
+# Identify the application(welcome the user)
+print('Welcome to Klingon Polite Change Calculator!\n')
+
+# Acquire the price
+purchase_amount = int(input('Please, enter the purchase amountn in mu (integer): '))
+print('')
+
+# Acquire the paid amount
+paid_amount = int(input('Please, enter the amount paid by Klingon customer i mu to pay for purchase (integer): '))
+print('')
+
+# Calculate the total change
+change = paid_amount - purchase_amount
+
+# 1 lru = 90 mu
+# 1 talon = 30 mu
+# 1 darsek = 10 mu
+# 1 shhhrok = 1 mu
+print('The Klingon "polite" way to give back change of %d mu is ' %change)
+
+
+
+lru = 0
+while change > 90:
+    change = change - 90 # how to count how many times have this carried out?
+    lru +=1 
+
+print('%d lru,' %lru)
+
+print('')
+print('---Bye!---')
+
