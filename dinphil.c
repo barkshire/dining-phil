@@ -10,20 +10,21 @@
 #define lock pthread_mutex_lock
 #define unlock pthread_mutex_unlock
 
+int state[N];
 
 typedef struct {
     int position;
     int count;
     //int *state;
-    //pthread_mutex_t *mon;
-    //pthread_cond_t **cv;
+    pthread_mutex_t *mon;
+    pthread_cond_t **cv;
     //pthread_t *leftFork = &fork[i];
     //pthread_t *rightFork = &fork[i+1 % N];
 } phil_t;
 
 void *Philosopher(void *arg);
 
-void think(phil_t *arg);
+void think(phil_t *phil);
 void eat(phil_t *phil);
 void pickup(phil_t *phil);
 void putdown(phil_t *phil);
@@ -50,17 +51,23 @@ void eat(){
 	
 }
 
-void pickup(phil_t *arg){
+void pickup(phil_t *phil){
     // revise RTFM for pthread lib
     phil_t *phil;
+
     lock(phil->mon);
-    pthread_cond_wait();
+    pthread_cond_wait(phil->cv, phil->mon);
     phil->state[phil->id] = EATING;
     unlock(phil->mon);
 }
 
 void putdown(phil_t *phil){
+    phil_t *phil;
 
+    lock(phil->mon);
+    pthread_cond_wait(phil->cv, phil->mon);
+    phil->state[phil->id] = THINKING;
+    unlock(phil->mon);
 }
 
 
@@ -84,6 +91,10 @@ int main(){
         phil->leftFork = &forks[i];
         phil->rightFork = &forks[(i+1) % N];
         pthread_create(&threads[i], NULL, Philosopher, (void *)phil);
+    }
+
+    for (i=0; i<N; i++) {
+        pthread_join(threads[i], NULL);
     }
 }
 
