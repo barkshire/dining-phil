@@ -57,7 +57,7 @@ void pickup(phil_t *phil){
 
     lock(phil->mon);
     pthread_cond_wait(phil->cv, phil->mon);
-    phil->state[phil->id] = EATING;
+    phil->state[phil->id] = EATING; // phil->id array hasn't been defined
     unlock(phil->mon);
 }
 
@@ -65,8 +65,8 @@ void putdown(phil_t *phil){
     phil_t *phil;
 
     lock(phil->mon);
-    pthread_cond_wait(phil->cv, phil->mon);
-    phil->state[phil->id] = THINKING;
+    pthread_cond_signal(phil->cv);
+    phil->state[phil->id] = THINKING; // phil->id array hasn't been defined
     unlock(phil->mon);
 }
 
