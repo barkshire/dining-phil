@@ -1,101 +1,77 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 // macros
 #define N 5 // # of philosophers & forks
 #define THINKING 0// Think is 0
 #define EATING 1// Eat is 1
 
-// mutex lock
+/* // mutex lock
 #define lock pthread_mutex_lock
-#define unlock pthread_mutex_unlock
+#define unlock pthread_mutex_unlock */
 
-int state[N];
-
-typedef struct {
-    int position;
-    int count;
-    //int *state;
-    pthread_mutex_t *mon;
-    pthread_cond_t **cv;
-    //pthread_t *leftFork = &fork[i];
-    //pthread_t *rightFork = &fork[i+1 % N];
-} phil_t;
-
-void *Philosopher(void *arg);
-
-void think(phil_t *phil);
-void eat(phil_t *phil);
-void pickup(phil_t *phil);
-void putdown(phil_t *phil);
-
-
+int state[N] = {1, 1, 1, 1, 1};
+pthread_mutex_t forks[N];
+pthread_t threads[N];
 
 // Philosopher Function
-void *Philosopher(void *arg){
-    phil_t *phil = (phil_t *)arg;
+void *Philosopher(int n){
 
     while(1){
-        think(phil);
-        pickup(phil);
-        eat(phil);
-        putdown(phil);
+        think(n);
+        pickup(n);
+        eat(n);
+        putdown(n);
     }
 }
 
-void think(){
+void think(int n){
+    printf("Phil %d is thinking\n", n);
+    sleep(1); 
     //pthread_mutex_t fork[N];
 }
 
-void eat(){
-	
+void eat(int n){
+    printf("Phil %d is eating\n", n);
+
+    for (int i=0; i<N; i++) {
+        printf("%d\n", state[i]);
+    }	
+    sleep(1); 
 }
 
-void pickup(phil_t *phil){
+void pickup(int n){
     // revise RTFM for pthread lib
-    phil_t *phil;
-
-    lock(phil->mon);
-    pthread_cond_wait(phil->cv, phil->mon);
-    phil->state[phil->id] = EATING; // phil->id array hasn't been defined
-    unlock(phil->mon);
+    pthread_mutex_lock(&forks[n]);
+    pthread_mutex_lock(&forks[(n+1)%5]);
+    state[n] = 0;
 }
 
-void putdown(phil_t *phil){
-    phil_t *phil;
-
-    lock(phil->mon);
-    pthread_cond_signal(phil->cv);
-    phil->state[phil->id] = THINKING; // phil->id array hasn't been defined
-    unlock(phil->mon);
+void putdown(int n){
+    pthread_mutex_unlock(&forks[n]);
+    pthread_mutex_unlock(&forks[(n+1)%5]);
+    state[n] = 1;
 }
 
+ 
 
-
-int main(){
-    int i;
-    pthread_t forks[N];
-    pthread_t threads[N];
-    
-    // create forks
-    for (i=0; i<N; i++) {
+int main(int argc, char *args[]){
+   
+        // create forks
+    for (int i=0; i<N; i++) {
         pthread_mutex_init(&forks[i], NULL);
     }
 
     // create threads
-    for (i=0; i<N; i++) {
-        phil_t *phil = malloc(sizeof(phil_t));
+    for (int i=0; i<N; i++) {
+        pthread_create(&threads[i], NULL, (void *)Philosopher, (void *)i);
+    } 
 
-        phil->position = i;
-        phil->count = N; //change this to N[5]? array form?
-        phil->leftFork = &forks[i];
-        phil->rightFork = &forks[(i+1) % N];
-        pthread_create(&threads[i], NULL, Philosopher, (void *)phil);
-    }
-
-    for (i=0; i<N; i++) {
+    for (int i=0; i<N; i++) {
         pthread_join(threads[i], NULL);
     }
+    return 0;
 }
 
 
